@@ -7,6 +7,33 @@ $dbname = 'world';
 $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
 
 $country = isset($_GET['country']) ? $_GET['country'] : '';
+$lookup = isset($_GET['lookup']) ? $_GET['lookup'] : '';
+
+if ($lookup === 'cities') {
+  $stmt = $conn->prepare(
+        "SELECT cities.name AS city, cities.district, cities.population
+         FROM cities
+         JOIN countries ON cities.country_code = countries.code
+         WHERE countries.name LIKE ?"
+    );
+    $stmt->execute(["%$country%"]);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo "<table>";
+    echo "<tr><th>Name</th><th>District</th><th>Population</th></tr>";
+    foreach ($results as $row) {
+        echo "<tr>";
+        echo "<td>" . htmlspecialchars($row['city'])       . "</td>";
+        echo "<td>" . htmlspecialchars($row['district'])   . "</td>";
+        echo "<td>" . htmlspecialchars($row['population']) . "</td>";
+        echo "</tr>";
+    }
+    echo "</table>";
+
+} else {
+
+
+}
 
 $stmt = $conn->prepare("SELECT * FROM countries WHERE name LIKE ?");
 $stmt->execute(["%$country%"]);
@@ -26,8 +53,4 @@ foreach ($results as $row) {
 }
 echo "</table>";
 ?>
-<ul>
-<?php foreach ($results as $row): ?>
-  <li><?= htmlspecialchars($row['name']) . ' is ruled by ' . htmlspecialchars($row['head_of_state']); ?></li>
-<?php endforeach; ?>
-</ul>
+
